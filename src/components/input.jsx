@@ -4,7 +4,7 @@ import attach from "../img/attach.png"
 import { AuthContext } from '../context/AuthContext'
 import { ChatContext } from '../context/ChatContext'
 import { useState } from 'react'
-import { arrayUnion, doc, Timestamp, updateDoc } from 'firebase/firestore'
+import { arrayUnion, doc, serverTimestamp, Timestamp, updateDoc } from 'firebase/firestore'
 import {v4 as uuid} from "uuid"
 import { getDownloadURL, uploadBytesResumable } from 'firebase/storage'
 import { db } from '../firebase'
@@ -52,8 +52,25 @@ const Input = () => {
         }),
       });
     }
-  };
 
+    await updateDoc(doc(db,"userChats",currentUser.uid),{
+      [data.chatId + ".lastMessage"]:{
+        text,
+      },
+      [data.chatId+".date"]: serverTimestamp()
+    });
+  
+    await updateDoc(doc(db,"userChats", data.user.uid),{
+      [data.chatId + ".lastMessage"]:{
+        text,
+      },
+      [data.chatId+".date"]: serverTimestamp()
+    });
+  
+    setText("")
+    setImg(null)
+
+  };
   return (
     <div className='input'>
       <input type="text" placeholder='Type something...' onChange={e=>setText(e.target.value)} />
